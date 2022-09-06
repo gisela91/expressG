@@ -1,9 +1,11 @@
 const express = require("express");
 const fs = require("fs");
+const morgan = require("morgan");
 const app = express();
 
 //middlewers
 app.use(express.json());
+app.use(morgan("dev"));
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   //console.log("My middleware");
@@ -17,9 +19,11 @@ const getAllProducts = (req, res) => {
   const products = JSON.parse(
     fs.readFileSync(`${__dirname}/data/products.json`)
     );
-  console.log(req.requestTime);
+  //console.log(req.requestTime);
   res.status(200).json({
     status: "success",
+    timeOfRequest: req.requestTime,
+    results: products.length,
     data: {
       products,
     },
@@ -56,16 +60,21 @@ const getProductById= (req, res) => {
       },
     });
   } else{
-      res.status(200).json({
+      res.status(404).json({
         status: "not found",
       });
   }
 }
 
+const productRouter = express.Router();
+app.use("/api/v1/products", productRouter);
 //routes
-app.get("/api/v1/products", getAllProducts);
-app.post("/api/v1/products", addproduct);
-app.get("/api/v1/products/:id", getProductById);
+productRouter.route("/").get(getAllProducts).post(addproduct);
+productRouter.route("/:id").get(getProductById);
+//app.get("/api/v1/products}", getAllProducts);
+//app.post("/api/v1/products", addproduct);
+//app.get("/api/v1/products/:id", getProductById);
+//productRouter.route("/:id").get(getProductById).put(updateProduct);
 
 app.listen(port, () =>{
     console.log(`App running on port ${port}`);
