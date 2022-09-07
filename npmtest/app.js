@@ -10,6 +10,6 @@ app.use((req, res, next) => {
   next();
 })
 //routers
-app.use("/api/v1/products/", productRouter);
+app.use("/api/v1/products", productRouter);
 
 module.exports = app;
